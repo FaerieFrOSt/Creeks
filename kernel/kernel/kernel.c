@@ -13,4 +13,6 @@ void	kernel_early(void)
 void	kernel_main(void)
 {
 	printf("Hello world!\n");
+	for (int i = 0; i < 100; ++i)
+		printf("%c\n", i % 26 + 'A');
 }

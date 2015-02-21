@@ -10,6 +10,21 @@ size_t		terminal_column;
 uint8_t		terminal_color;
 uint16_t	*terminal_buffer;
 
+void	scrollup(size_t n)
+{
+	if (!n)
+		return;
+	uint16_t	*buff, *tmp;
+	for (buff = VGA_MEMORY; buff < VGA_MEMORY + VGA_SIZE; ++buff)
+	{
+		tmp = buff + n * VGA_WIDTH;
+		if (tmp < VGA_MEMORY + VGA_SIZE)
+			*buff = *tmp;
+		else
+			*buff = make_vgaentry(' ', terminal_color);
+	}
+}
+
 void	terminal_initialize(void)
 {
 	terminal_row = 0;
@@ -33,12 +48,25 @@ void	terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 
 void	terminal_putchar(char c)
 {
+	if (c == '\n')
+	{
+		terminal_column = 0;
+		if (++terminal_row == VGA_HEIGHT)
+		{
+			--terminal_row;
+			scrollup(1);
+		}
+		return;
+	}
 	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 	if (++terminal_column == VGA_WIDTH)
 	{
 		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT)
-			terminal_row = 0;
+		{
+			--terminal_row;
+			scrollup(1);
+		}
 	}
 }
 

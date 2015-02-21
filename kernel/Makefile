@@ -3,7 +3,7 @@ HOSTARCH := $(shell ../target-triplet-to-arch.sh $(HOST))
 
 EXE := creeks.bin
 
-CFLAGS ?= -O2 -g
+CFLAGS ?= -g
 CPPFLAGS ?=
 LDFLAGS ?=
 LIBS ?=
