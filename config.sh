@@ -1,7 +1,7 @@
 SYSTEM_HEADER_PROJECTS="libc kernel"
 PROJECTS="libc kernel"
 
-export PATH="cross/bin:$PATH"
+export PATH="/home/faerie/C/creeks/cross/bin:$PATH"
 export MAKE=${MAKE:-make}
 export HOST=${HOST:-$(./default-host.sh)}
 export AR=${HOST}-ar
@@ -14,7 +14,7 @@ export BOOTDIR=/boot
 export LIBDIR=$EXEC_PREFIX/lib
 export INCLUDEDIR=$PREFIX/include
 
-export CFLAGS='-O2 -g'
+export CFLAGS='-g'
 export CPPFLAGS=''
 
 # configure the cross-compiler to use the system root
