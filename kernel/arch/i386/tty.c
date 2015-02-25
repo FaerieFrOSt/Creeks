@@ -5,12 +5,12 @@
 
 #include <kernel/vga.h>
 
-size_t		terminal_row;
-size_t		terminal_column;
-uint8_t		terminal_color;
-uint16_t	*terminal_buffer;
+static size_t	terminal_row;
+static size_t	terminal_column;
+static uint8_t	terminal_color;
+static uint16_t	*terminal_buffer;
 
-void	scrollup(size_t n)
+void	terminal_scrollup(size_t n)
 {
 	if (!n)
 		return;
@@ -41,6 +41,11 @@ void	terminal_setcolor(uint8_t color)
 	terminal_color = color;
 }
 
+void	terminal_removecolor(void)
+{
+	terminal_color = make_color(COLOR_GREEN, COLOR_BLACK);
+}
+
 void	terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 {
 	terminal_buffer[y * VGA_WIDTH + x] = make_vgaentry(c, color);
@@ -54,18 +59,24 @@ void	terminal_putchar(char c)
 		if (++terminal_row == VGA_HEIGHT)
 		{
 			--terminal_row;
-			scrollup(1);
+			terminal_scrollup(1);
 		}
-		return;
 	}
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH)
-	{
+	else if (c == 9) // TAB
+		terminal_column = terminal_column + 8 - (terminal_column % 8);
+	else if (c == 13) //CR
 		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT)
+	else
+	{
+		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+		if (++terminal_column == VGA_WIDTH)
 		{
-			--terminal_row;
-			scrollup(1);
+			terminal_column = 0;
+			if (++terminal_row == VGA_HEIGHT)
+			{
+				--terminal_row;
+				terminal_scrollup(1);
+			}
 		}
 	}
 }

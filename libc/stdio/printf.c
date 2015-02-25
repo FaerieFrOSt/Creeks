@@ -9,6 +9,33 @@ static void	print(const char *data, size_t data_length)
 		putchar((int)((const unsigned char*)data)[i]);
 }
 
+static void	itoa(int nb, const char *base)
+{
+	size_t	size = strlen(base);
+	if (!base || !size)
+		return;
+	if (nb < 0)
+	{
+		putchar((int)'-');
+		nb = -nb;
+	}
+	if (nb / size)
+		itoa(nb / size, base);
+	putchar((int)base[nb % size]);
+}
+
+static void	dectoa(int nb)
+{
+	static const char	*base = "0123456789";
+	itoa(nb, base);
+}
+
+static void	hextoa(int nb)
+{
+	static const char	*base = "0123456789ABCDEF";
+	itoa(nb, base);
+}
+
 int	printf(const char *restrict format, ...)
 {
 	va_list	parameters;
@@ -51,6 +78,16 @@ incomprehensible_conversion:
 			++format;
 			const char	*s = va_arg(parameters, const char*);
 			print(s, strlen(s));
+		}else if (*format == 'd')
+		{
+			++format;
+			const int nb = va_arg(parameters, const int);
+			dectoa(nb);
+		}else if (*format == 'x')
+		{
+			++format;
+			const int nb = va_arg(parameters, const int);
+			hextoa(nb);
 		}else
 			goto incomprehensible_conversion;
 	}
