@@ -5,16 +5,22 @@
 
 #include <kernel/tty.h>
 #include <kernel/gdt.h>
+#include <kernel/idt.h>
 #include <kernel/vga.h>
+#include <kernel/io.h>
+#include <kernel/pic.h>
 
 void	kernel_early(void)
 {
 	terminal_initialize();
 
-	terminal_setcolor(make_color(COLOR_CYAN, COLOR_BLACK));
-	printf("KERNEL");
-	terminal_removecolor();
-	printf(" : loading new gdt...\t");
+	terminal_debug("loading idt...");
+	init_idt();
+	terminal_ok();
+	terminal_debug("loading pic...");
+	init_pic();
+	terminal_ok();
+	terminal_debug("loading new gdt...");
 	init_gdt();
 	asm("	movw $0x18, %ax	\n \
 			movw %ax, %ss	\n \
@@ -23,11 +29,9 @@ void	kernel_early(void)
 
 void	kernel_main(void)
 {
-	terminal_setcolor(make_color(COLOR_WHITE, COLOR_BLACK));
-	printf("...DONE!");
-	terminal_removecolor();
-	printf("\n");
-	printf("Hello world!\n");
-	printf("%x\n", 10);
+	terminal_ok();
+	terminal_debug("allowing interrupts...");
+	sti;
+	terminal_ok();
 	while (1);
 }

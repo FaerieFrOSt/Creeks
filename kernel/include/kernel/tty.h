@@ -12,4 +12,9 @@ void	terminal_scrollup(size_t n);
 void	terminal_setcolor(uint8_t color);
 void	terminal_removecolor(void);
 
+void	terminal_debug(const char*);
+void	terminal_warning(const char*);
+void	terminal_error(const char*);
+void	terminal_ok(void);
+
 #endif /* !_TTY_H_ */

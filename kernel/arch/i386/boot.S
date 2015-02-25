@@ -14,6 +14,7 @@
 .global _start
 .type _start, @function
 _start:
+	cli
 	call kernel_early
 	call _init
 	call kernel_main

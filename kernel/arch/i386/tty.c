@@ -86,3 +86,35 @@ void	terminal_write(const char* data, size_t size)
 	for (size_t i = 0; i < size; ++i)
 		terminal_putchar(data[i]);
 }
+
+void	terminal_debug(const char *s)
+{
+	terminal_setcolor(make_color(COLOR_CYAN, COLOR_BLACK));
+	terminal_write("KERNEL :", 8);
+	terminal_removecolor();
+	terminal_write(s, strlen(s));
+}
+
+void	terminal_ok(void)
+{
+	terminal_setcolor(make_color(COLOR_WHITE, COLOR_BLACK));
+	terminal_write("OK!\n", 4);
+	terminal_removecolor();
+}
+
+void	terminal_warning(const char *s)
+{
+	terminal_setcolor(make_color(COLOR_MAGENTA, COLOR_BLACK));
+	terminal_write("KERNEL :", 8);
+	terminal_removecolor();
+	terminal_write(s, strlen(s));
+}
+
+void	terminal_error(const char *s)
+{
+	terminal_setcolor(make_color(COLOR_RED, COLOR_BLACK));
+	terminal_write("KERNEL :", 8);
+	terminal_removecolor();
+	terminal_write(s, strlen(s));
+}
+

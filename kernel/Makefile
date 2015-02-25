@@ -30,7 +30,8 @@ CPPFLAGS := $(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS := $(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS := $(LIBS) $(KERNEL_ARCH_LIBS)
 
-OBJS := $(KERNEL_ARCH_OBJS) kernel/kernel.o kernel/gdt.o
+OBJS := $(KERNEL_ARCH_OBJS) kernel/kernel.o kernel/gdt.o kernel/idt.o kernel/interrupt.o \
+		kernel/pic.o
 
 CRTI_OBJ := $(ARCHDIR)/crti.o
 CRTBEGIN_OBJ := $(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)
