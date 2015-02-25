@@ -33,6 +33,7 @@ static void	dectoa(int nb)
 static void	hextoa(int nb)
 {
 	static const char	*base = "0123456789ABCDEF";
+	print("0x", 2);
 	itoa(nb, base);
 }
 

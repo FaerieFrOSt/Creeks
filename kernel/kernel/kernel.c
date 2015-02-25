@@ -28,6 +28,6 @@ void	kernel_main(void)
 	terminal_removecolor();
 	printf("\n");
 	printf("Hello world!\n");
-	printf("%d\n", 10);
+	printf("%x\n", 10);
 	while (1);
 }
