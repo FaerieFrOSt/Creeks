@@ -3,6 +3,7 @@
 # define _VGA_H_
 
 #include <stdint.h>
+#include "kernel/io.h"
 
 #define VGA_WIDTH	80
 #define VGA_HEIGHT	25
@@ -39,6 +40,17 @@ static inline uint16_t	make_vgaentry(char c, uint8_t color)
 	uint16_t	c16 = c;
 	uint16_t	color16 = color;
 	return c16 | color16 << 8;
+}
+
+static inline void	move_cursor(uint8_t x, uint8_t y)
+{
+	uint16_t	pos;
+
+	pos = y * VGA_WIDTH + x;
+	outb(0x3d4, 0x0f);
+	outb(0x3d5, (uint8_t) pos);
+	outb(0x3d4, 0x0e);
+	outb(0x3d5, (uint8_t) (pos >> 8));
 }
 
 #endif /* !_VGA_H_ */
