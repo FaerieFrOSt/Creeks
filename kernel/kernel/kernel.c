@@ -15,6 +15,15 @@ extern struct tss	default_tss;
 
 void	task1(void)
 {
+	char	*msg = (char*)0x100;
+	msg[0] = 'H';
+	msg[1] = 'e';
+	msg[2] = 'l';
+	msg[3] = 'l';
+	msg[4] = 'o';
+	msg[5] = '\n';
+	msg[6] = 0;
+	asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
 	while(1);
 }
 

@@ -6,6 +6,7 @@ void	_asm_default_int(void);
 void	_asm_irq_0(void);
 void	_asm_irq_1(void);
 void	_asm_exec_GP(void);
+void	_asm_syscalls(void);
 
 static struct idtdesc	kidt[IDTSIZE];
 static struct idtr		kidtr;
@@ -33,6 +34,9 @@ void	init_idt(void)
 	init_idt_desc(0x08, (uint32_t) _asm_irq_0, INTGATE, &kidt[32]);
 	//keyboard
 	init_idt_desc(0x08, (uint32_t) _asm_irq_1, INTGATE, &kidt[33]);
+
+	//system calls int 0x30
+	init_idt_desc(0x08, (uint32_t) _asm_syscalls, 0xef00, &kidt[48]);
 
 	kidtr.limite = IDTSIZE * 8;
 	kidtr.base = IDTBASE;
