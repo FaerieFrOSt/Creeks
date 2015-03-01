@@ -5,6 +5,7 @@
 void	_asm_default_int(void);
 void	_asm_irq_0(void);
 void	_asm_irq_1(void);
+void	_asm_exec_GP(void);
 
 static struct idtdesc	kidt[IDTSIZE];
 static struct idtr		kidtr;
@@ -25,6 +26,8 @@ void	init_idt(void)
 	//default system descriptor
 	for (i = 0; i < IDTSIZE; ++i)
 		init_idt_desc(0x08, (uint32_t) _asm_default_int, INTGATE, &kidt[i]);
+
+	init_idt_desc(0x08, (uint32_t) _asm_exec_GP, INTGATE, &kidt[13]); //#GP
 
 	//clock
 	init_idt_desc(0x08, (uint32_t) _asm_irq_0, INTGATE, &kidt[32]);

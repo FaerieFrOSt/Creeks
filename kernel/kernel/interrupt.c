@@ -5,6 +5,17 @@
 #include "kernel/io.h"
 #include "kernel/kbd.h"
 
+void	isr_GP_exec(void)
+{
+	terminal_error("GP fault\n");
+	uint32_t	eip;
+	uint16_t	cs;
+	asm("	popw %0 \n \
+			mov %%cs, %1" : "=m" (eip), "=m" (cs) :);
+	printf("eip : %x\ncs : %x", (unsigned int)eip, cs);
+	while (1);
+}
+
 void	isr_default_int(void)
 {
 	terminal_debug("interrupt\n");
@@ -19,7 +30,7 @@ void	isr_clock_int(void)
 	{
 		++sec;
 		tic = 0;
-		/* printf("clock\n"); */
+		printf(".");
 	}
 }
 

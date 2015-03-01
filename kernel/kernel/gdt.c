@@ -1,8 +1,11 @@
 #include "kernel/gdt.h"
+#include "kernel/tss.h"
 #include <string.h>
 
 static struct gdtdesc	kgdt[GDTSIZE];
 static struct gdtr		kgdtr;
+
+struct tss				default_tss;
 
 static void	init_gdt_desc(uint32_t base, uint32_t limite, uint8_t acces, uint8_t other,
 						struct gdtdesc *desc)
@@ -22,6 +25,17 @@ void	init_gdt(void)
 	init_gdt_desc(0, 0xfffff, 0x9b, 0x0d, &kgdt[1]); //code
 	init_gdt_desc(0, 0xfffff, 0x93, 0x0d, &kgdt[2]); //data
 	init_gdt_desc(0, 0, 0x97, 0x0d, &kgdt[3]); // stack
+
+	//segments in user mode
+	init_gdt_desc(0x30000, 0x1, 0xff, 0x0d, &kgdt[4]); //user code
+	init_gdt_desc(0x30000, 0x1, 0xf3, 0x0d, &kgdt[5]); //user data
+	init_gdt_desc(0, 0, 0xf7, 0xd, &kgdt[6]); //user stack
+
+	memset(&default_tss, 0, sizeof(default_tss));
+	default_tss.esp0 = 0x20000;
+	default_tss.ss0 = 0x18;
+
+	init_gdt_desc((uint32_t)&default_tss, 0x67, 0xe9, 0, &kgdt[7]); //tss descriptor
 
 	kgdtr.limite = GDTSIZE * 8;
 	kgdtr.base = GDTBASE;
