@@ -8,20 +8,12 @@
 
 void	do_syscalls(int sys_num)
 {
-	uint16_t		ds_select;
-	uint32_t		ds_base;
-	struct gdtdesc	*ds;
-	uint8_t			*msg;
+	char	*u_str;
 
 	if (sys_num == 1)
 	{
-		asm("	mov 44(%%ebp), %%eax	\n \
-				mov %%eax, %0			\n \
-				mov 24(%%ebp), %%ax		\n \
-				mov %%ax, %1" : "=m" (msg), "=m" (ds_select) :);
-		ds = (struct gdtdesc *) (GDTBASE + (ds_select & 0xf8));
-		ds_base = ds->base0_15 + (ds->base16_23 << 16) + (ds->base24_31 << 24);
-		printf("%s", (char*)(ds_base + msg));
+		asm("mov %%ebx, %0" : "=m" (u_str) :);
+		printf("%s", u_str);
 	} else
 		printf("syscall %d\n", sys_num);
 }
@@ -37,7 +29,7 @@ void	isr_GP_exec(void)
 	while (1);
 }
 
-void	isr_PF_exec(size_t addr)
+void	isr_PF_exec(unsigned int addr)
 {
 	printf("PF fault at : %x\n", addr);
 	while (1);

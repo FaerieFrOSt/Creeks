@@ -16,7 +16,7 @@ extern struct tss	default_tss;
 
 void	task1(void)
 {
-	char	*msg = (char*)0x100;
+	char	*msg = (char*)0x40000100;
 	msg[0] = 'H';
 	msg[1] = 'e';
 	msg[2] = 'l';
@@ -58,24 +58,28 @@ void	kernel_main(void)
 	terminal_debug("allowing interrupts...");
 	sti;
 	terminal_ok();
-	while (1);
-	terminal_debug("Switching to user mode ring 3\n");
-	memcpy((char*)0x30000, &task1, 100);
+	terminal_debug("creating task1...");
+	uint32_t	*pd = pd_create_task1();
+	memcpy((char*)0x100000, &task1, 100);
+	terminal_ok();
+	terminal_debug("switching to user mode ring 3\n");
 	asm("	cli			\n \
+			movl $0x20000, %0	\n \
+			movl %1, %%eax	\n \
+			movl %%eax, %%cr3	\n \
 			push $0x33	\n \
-			push $0x30000	\n \
+			push $0x40000f00	\n \
 			pushfl		\n \
 			popl %%eax	\n \
 			orl $0x200, %%eax	\n \
 			and $0xffffbfff, %%eax	\n \
 			push %%eax	\n \
 			push $0x23	\n \
-			push $0x0	\n \
-			movl $0x20000, %0	\n \
+			push $0x40000000	\n \
 			movw $0x2B, %%ax	\n \
 			movw %%ax, %%ds	\n \
-			iret" : "=m" (default_tss.esp0) :);
-	terminal_error("Critical error! Halting system");
+			iret" : "=m" (default_tss.esp0) : "m" (pd));
+	terminal_error("critical error! Halting system");
 	asm("hlt");
 	while (1);
 }
