@@ -10,6 +10,7 @@
 #include <kernel/io.h>
 #include <kernel/pic.h>
 #include <kernel/tss.h>
+#include <kernel/memory.h>
 
 extern struct tss	default_tss;
 
@@ -44,6 +45,9 @@ void	kernel_early(void)
 	asm("	movw $0x38, %ax	\n \
 			ltr %ax"); //0x38 => &kgdt[7]
 	terminal_ok();
+	terminal_debug("activating paging...");
+	init_mm();
+	terminal_ok();
 	asm("	movw $0x18, %ax	\n \
 			movw %ax, %ss	\n \
 			movl $0x20000, %esp");
@@ -54,6 +58,7 @@ void	kernel_main(void)
 	terminal_debug("allowing interrupts...");
 	sti;
 	terminal_ok();
+	while (1);
 	terminal_debug("Switching to user mode ring 3\n");
 	memcpy((char*)0x30000, &task1, 100);
 	asm("	cli			\n \

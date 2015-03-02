@@ -6,6 +6,7 @@ void	_asm_default_int(void);
 void	_asm_irq_0(void);
 void	_asm_irq_1(void);
 void	_asm_exec_GP(void);
+void	_asm_exec_PF(void);
 void	_asm_syscalls(void);
 
 static struct idtdesc	kidt[IDTSIZE];
@@ -29,6 +30,8 @@ void	init_idt(void)
 		init_idt_desc(0x08, (uint32_t) _asm_default_int, INTGATE, &kidt[i]);
 
 	init_idt_desc(0x08, (uint32_t) _asm_exec_GP, INTGATE, &kidt[13]); //#GP
+
+	init_idt_desc(0x08, (uint32_t) _asm_exec_PF, INTGATE, &kidt[14]); //#PF
 
 	//clock
 	init_idt_desc(0x08, (uint32_t) _asm_irq_0, INTGATE, &kidt[32]);

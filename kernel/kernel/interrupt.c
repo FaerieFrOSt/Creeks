@@ -37,6 +37,12 @@ void	isr_GP_exec(void)
 	while (1);
 }
 
+void	isr_PF_exec(size_t addr)
+{
+	printf("PF fault at : %x\n", addr);
+	while (1);
+}
+
 void	isr_default_int(void)
 {
 	terminal_debug("interrupt\n");
