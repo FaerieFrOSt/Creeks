@@ -5,6 +5,7 @@
 #include "kernel/io.h"
 #include "kernel/kbd.h"
 #include "kernel/gdt.h"
+#include "kernel/process.h"
 
 void	do_syscalls(int sys_num)
 {
@@ -49,8 +50,8 @@ void	isr_clock_int(void)
 	{
 		++sec;
 		tic = 0;
-		printf(".");
 	}
+	scheduler();
 }
 
 void	isr_kbd_int(void)

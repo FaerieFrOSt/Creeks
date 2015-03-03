@@ -32,7 +32,7 @@ void	init_gdt(void)
 	init_gdt_desc(0, 0, 0xf7, 0xd, &kgdt[6]); //user stack
 
 	memset(&default_tss, 0, sizeof(default_tss));
-	default_tss.esp0 = 0x20000;
+	default_tss.esp0 = 0x200000;
 	default_tss.ss0 = 0x18;
 
 	init_gdt_desc((uint32_t)&default_tss, 0x67, 0xe9, 0, &kgdt[7]); //tss descriptor

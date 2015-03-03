@@ -39,7 +39,7 @@ void	init_idt(void)
 	init_idt_desc(0x08, (uint32_t) _asm_irq_1, INTGATE, &kidt[33]);
 
 	//system calls int 0x30
-	init_idt_desc(0x08, (uint32_t) _asm_syscalls, 0xef00, &kidt[48]);
+	init_idt_desc(0x08, (uint32_t) _asm_syscalls, INTGATE|0x6000/*0xef00*/, &kidt[48]);
 
 	kidtr.limite = IDTSIZE * 8;
 	kidtr.base = IDTBASE;
