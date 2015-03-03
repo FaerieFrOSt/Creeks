@@ -11,21 +11,48 @@
 #include <kernel/pic.h>
 #include <kernel/tss.h>
 #include <kernel/memory.h>
+#include <kernel/process.h>
 
 extern struct tss	default_tss;
 
+void	kernel_main(void);
+
 void	task1(void)
 {
-	char	*msg = (char*)0x40000100;
-	msg[0] = 'H';
-	msg[1] = 'e';
-	msg[2] = 'l';
-	msg[3] = 'l';
-	msg[4] = 'o';
+	char	*msg = (char*)0x40001000;
+	int		i;
+
+	msg[0] = 't';
+	msg[1] = 'a';
+	msg[2] = 's';
+	msg[3] = 'k';
+	msg[4] = '1';
 	msg[5] = '\n';
 	msg[6] = 0;
-	asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-	while(1);
+	while(1)
+	{
+		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
+		for (i = 0; i < 1000000; ++i);
+	}
+}
+
+void	task2(void)
+{
+	char	*msg = (char*)0x40001000;
+	int		i;
+
+	msg[0] = 't';
+	msg[1] = 'a';
+	msg[2] = 's';
+	msg[3] = 'k';
+	msg[4] = '2';
+	msg[5] = '\n';
+	msg[6] = 0;
+	while(1)
+	{
+		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
+		for (i = 0; i < 1000000; ++i);
+	}
 }
 
 void	kernel_early(void)
@@ -50,36 +77,18 @@ void	kernel_early(void)
 	terminal_ok();
 	asm("	movw $0x18, %ax	\n \
 			movw %ax, %ss	\n \
-			movl $0x20000, %esp");
+			movl $0x120000, %esp");
+	kernel_main();
 }
 
 void	kernel_main(void)
 {
+	terminal_debug("creating task1...");
+	load_task((uint32_t*)0x200000, (uint32_t*)&task1, 0x2000);
+	load_task((uint32_t*)0x210000, (uint32_t*)&task2, 0x2000);
+	terminal_ok();
 	terminal_debug("allowing interrupts...");
 	sti;
 	terminal_ok();
-	terminal_debug("creating task1...");
-	uint32_t	*pd = pd_create_task1();
-	memcpy((char*)0x100000, &task1, 100);
-	terminal_ok();
-	terminal_debug("switching to user mode ring 3\n");
-	asm("	cli			\n \
-			movl $0x20000, %0	\n \
-			movl %1, %%eax	\n \
-			movl %%eax, %%cr3	\n \
-			push $0x33	\n \
-			push $0x40000f00	\n \
-			pushfl		\n \
-			popl %%eax	\n \
-			orl $0x200, %%eax	\n \
-			and $0xffffbfff, %%eax	\n \
-			push %%eax	\n \
-			push $0x23	\n \
-			push $0x40000000	\n \
-			movw $0x2B, %%ax	\n \
-			movw %%ax, %%ds	\n \
-			iret" : "=m" (default_tss.esp0) : "m" (pd));
-	terminal_error("critical error! Halting system");
-	asm("hlt");
 	while (1);
 }

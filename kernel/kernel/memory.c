@@ -1,12 +1,9 @@
 #include <stdint.h>
 #include "kernel/memory.h"
 
-#define set_page_frame_used(page)	mem_bitmap[((uint32_t)(page)) / 8] |= (1 << (((uint32_t)(page)) % 8))
-#define release_page_frame(p_addr)	mem_bitmap[((uint32_t)(p_addr) / PAGESIZE) / 8] &= ~(1 << (((uint32_t)(p_addr) / PAGESIZE) % 8))
-
 static uint32_t	*pd0; //kernel page directory
 static uint32_t	*pt0; //kernel page table
-static uint8_t	mem_bitmap[RAM_MAXPAGE / 8]; //bitmap page allocation (1Go)
+uint8_t			mem_bitmap[RAM_MAXPAGE / 8]; //bitmap page allocation (1Go)
 
 char	*get_page_frame(void)
 {
@@ -28,13 +25,15 @@ char	*get_page_frame(void)
 void	init_mm(void)
 {
 	uint32_t	page_addr;
-	int			i, pg;
+	uint32_t	i, pg;
 
 	for (pg = 0; pg < RAM_MAXPAGE / 8; ++pg)
 		mem_bitmap[pg] = 0;
 
 	//reserved pages for kernel
-	for (pg = PAGE(0x0); pg < PAGE(0x20000); ++pg)
+	for (pg = PAGE(0x0); pg < PAGE(0x1000); ++pg) //idt, gdt and other stuff are here
+		set_page_frame_used(pg);
+	for (pg = PAGE(0x100000); pg < PAGE(0x120000); ++pg)
 		set_page_frame_used(pg);
 
 	//reserved pages for hardware
@@ -67,29 +66,34 @@ void	init_mm(void)
 			mov %%eax, %%cr0" :: "m" (pd0), "i" (PAGING_FLAG));
 }
 
-uint32_t	*pd_create_task1(void)
+uint32_t	*pd_create(uint32_t *code_phys_addr, size_t code_size)
 {
 	uint32_t	*pd, *pt;
-	uint32_t	i;
+	uint32_t	i, j;
+	uint32_t	pages;
 
 	//page directory
 	pd = (uint32_t*)get_page_frame();
-	for (i = 0; i < 1024; ++i)
+	for (i = 1; i < 1024; ++i)
 		pd[i] = 0;
-	//page table[0]
-	pt = (uint32_t*)get_page_frame();
-	for (i = 0; i < 1024; ++i)
-		pt[i] = 0;
-
 	//kernel space
 	pd[0] = pd0[0];
 	pd[0] |= 3;
-
 	//user space
-	pd[USER_OFFSET >> 22] = (uint32_t)pt;
-	pd[USER_OFFSET >> 22] |= 7;
-
-	pt[0] = 0x100000;
-	pt[0] |= 7;
+	if (code_size % PAGESIZE)
+		pages = code_size / PAGESIZE + 1;
+	else
+		pages = code_size / PAGESIZE;
+	for (i = 0; pages; ++i)
+	{
+		pt = (uint32_t*) get_page_frame();
+		pd[(USER_OFFSET + i * PAGESIZE * 1024) >> 22] = (uint32_t)pt;
+		pd[(USER_OFFSET + i * PAGESIZE * 1024) >> 22] |= 7;
+		for (j = 0; j < 1024 && pages; ++j, --pages)
+		{
+			pt[j] = (uint32_t)(code_phys_addr + i * PAGESIZE * 1024 + j * PAGESIZE);
+			pt[j] |= 7;
+		}
+	}
 	return pd;
 }
