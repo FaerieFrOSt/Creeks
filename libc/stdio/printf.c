@@ -89,7 +89,27 @@ incomprehensible_conversion:
 			++format;
 			const int nb = va_arg(parameters, const int);
 			hextoa(nb);
-		}else
+		}else if (*format == 'u')
+		{
+			++format;
+			const unsigned int	nb = va_arg(parameters, const unsigned int);
+			dectoa(nb);
+		}else if (*format == 'l')
+		{
+			++format;
+			if (*format == 'u')
+			{
+				++format;
+				const unsigned long	nb = va_arg(parameters, const unsigned long);
+				dectoa(nb);
+			}else if (*format == 'd')
+			{
+				++format;
+				const long	nb = va_arg(parameters, const long);
+				dectoa(nb);
+			}
+		}
+		else
 			goto incomprehensible_conversion;
 	}
 	va_end(parameters);

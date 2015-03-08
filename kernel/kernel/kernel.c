@@ -12,6 +12,7 @@
 #include <kernel/tss.h>
 #include <kernel/memory.h>
 #include <kernel/process.h>
+#include <kernel/grub.h>
 
 extern struct tss	default_tss;
 
@@ -55,10 +56,14 @@ void	task2(void)
 	}
 }
 
-void	kernel_early(void)
+void	kernel_early(struct mb_partial_info *mbi)
 {
 	terminal_initialize();
 
+	terminal_debug("loading kernel...\n");
+	terminal_debug("RAM detected : ");
+	printf("%luk (lower), %luk (upper). Total : %luM\n", mbi->low_mem, mbi->high_mem,
+			(mbi->high_mem - mbi->low_mem) / 1024);
 	terminal_debug("loading idt...");
 	init_idt();
 	terminal_ok();
@@ -84,8 +89,8 @@ void	kernel_early(void)
 void	kernel_main(void)
 {
 	terminal_debug("creating task1...");
-	load_task((uint32_t*)0x200000, (uint32_t*)&task1, 0x2000);
-	load_task((uint32_t*)0x210000, (uint32_t*)&task2, 0x2000);
+	/* load_task((uint32_t*)0x200000, (uint32_t*)&task1, 0x2000); */
+	/* load_task((uint32_t*)0x210000, (uint32_t*)&task2, 0x2000); */
 	terminal_ok();
 	terminal_debug("allowing interrupts...");
 	sti;

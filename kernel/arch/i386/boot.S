@@ -16,6 +16,7 @@
 _start:
 	cli
 	call _init
+	push %ebx
 	call kernel_early
 	cli
 	hlt
