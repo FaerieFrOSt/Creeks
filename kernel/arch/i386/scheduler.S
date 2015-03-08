@@ -4,6 +4,7 @@ do_switch:
 	mov (%esp), %esi
 	pop %eax	#to get *current
 
+	#prepare registers
 	pushl 4(%esi)
 	pushl 8(%esi)
 	pushl 12(%esi)
@@ -16,12 +17,15 @@ do_switch:
 	pushl 52(%esi)
 	pushl 54(%esi)
 
+	#remove PIC mask
 	mov $0x20, %al
 	out %al, $0x20
 
+	#load page tables
 	mov 56(%esi), %eax
 	mov %eax, %cr3
 
+	#load registers
 	pop %gs
 	pop %fs
 	pop %es

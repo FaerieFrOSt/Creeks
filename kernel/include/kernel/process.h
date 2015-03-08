@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define USERMODE 0
+#define KERNELMODE 1
+
 struct process
 {
 	size_t	pid;
@@ -16,6 +19,11 @@ struct process
 		uint32_t	cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
 		uint32_t	cr3;
 	} regs __attribute__ ((packed));
+	struct
+	{
+		uint16_t	ss0;
+		uint32_t	esp0;
+	} kstack __attribute__ ((packed));
 } __attribute__ ((packed));
 
 void	scheduler(void);

@@ -8,6 +8,7 @@
 #define IDTSIZE 0xff
 
 #define INTGATE 0x8e00
+#define TRAPGATE 0xef00
 
 struct	idtdesc
 {

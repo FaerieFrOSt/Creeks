@@ -11,16 +11,54 @@ void	do_switch(void);
 
 extern struct tss	default_tss;
 
+void	switch_to(int n, int mode)
+{
+	uint32_t	kesp, eflags;
+	uint16_t	kss, ss, cs;
+
+	current = &p_list[n];
+
+	default_tss.ss0 = current->kstack.ss0;
+	default_tss.esp0 = current->kstack.esp0;
+	ss = current->regs.ss;
+	cs = current->regs.cs;
+	eflags = (current->regs.eflags | 0x200) & 0xffffbfff;
+
+	if (mode == USERMODE)
+	{
+		kss = current->kstack.ss0;
+		kesp = current->kstack.esp0;
+	} else
+	{
+		kss = current->regs.ss;
+		kesp = current->regs.esp;
+	}
+
+	asm ("	mov %0, %%ss	\n \
+			mov %1, %%esp	\n \
+			cmp %[KMODE], %[mode]	\n \
+			je next			\n \
+			push %2			\n \
+			push %3			\n \
+			next:			\n \
+			push %4			\n \
+			push %5			\n \
+			push %6			\n \
+			push %7			\n \
+			ljmp $0x08, $do_switch" :: "m" (kss), "m" (kesp), "m" (ss), "m" (current->regs.esp),
+			"m" (eflags), "m" (cs), "m" (current->regs.eip), "m" (current),
+			[KMODE] "i" (KERNELMODE), [mode] "g" (mode));
+}
+
 void	scheduler(void)
 {
+	struct process	*p;
 	uint32_t	*stack_ptr;
-	uint32_t	esp0, eflags;
-	uint16_t	ss, cs;
 
 	asm("mov (%%ebp), %%eax; mov %%eax, %0" : "=m" (stack_ptr) : );
 
 	if (!current && n_proc)
-		current = &p_list[0];
+		switch_to(0, USERMODE);
 	else if (n_proc <= 1)
 		return;
 	else if (n_proc > 1)
@@ -39,27 +77,26 @@ void	scheduler(void)
 		current->regs.es = stack_ptr[4];
 		current->regs.fs = stack_ptr[3];
 		current->regs.gs = stack_ptr[2];
-		current->regs.esp = stack_ptr[17];
-		current->regs.ss = stack_ptr[18];
 
-		default_tss.esp0 = (uint32_t) (stack_ptr + 19);
+		if (current->regs.cs != 0x08) //not during a system call
+		{
+			current->regs.esp = stack_ptr[17];
+			current->regs.ss = stack_ptr[18];
+		} else //int during a system call
+		{
+			current->regs.esp = stack_ptr[9] + 12;
+			current->regs.ss = default_tss.ss0;
+		}
+		current->kstack.ss0 = default_tss.ss0;
+		current->kstack.esp0 = default_tss.esp0;
+
 		if (n_proc > current->pid + 1) //simple roundrobin
-			current = &p_list[current->pid + 1];
+			p = &p_list[current->pid + 1];
 		else
-			current = &p_list[0];
+			p = &p_list[0];
+		if (p->regs.cs != 0x08)
+			switch_to(p->pid, USERMODE);
+		else
+			switch_to(p->pid, KERNELMODE);
 	}
-
-	ss = current->regs.ss;
-	cs = current->regs.cs;
-	eflags = (current->regs.eflags | 0x200) & 0xffffbfff;
-	esp0 = default_tss.esp0;
-	asm("	mov %0, %%esp		\n \
-			push %1				\n \
-			push %2				\n \
-			push %3				\n \
-			push %4				\n \
-			push %5				\n \
-			push %6				\n \
-			ljmp $0x08, $do_switch" :: "m" (esp0), "m" (ss), "m" (current->regs.esp), \
-			"m" (eflags), "m" (cs), "m" (current->regs.eip), "m" (current));
 }
