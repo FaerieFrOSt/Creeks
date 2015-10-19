@@ -1,7 +1,7 @@
 SYSTEM_HEADER_PROJECTS="libc kernel"
 PROJECTS="libc kernel"
 
-export PATH="/home/faerie/C/creeks/cross/bin:$PATH"
+export PATH="$(pwd)/cross/bin:$PATH"
 export MAKE=${MAKE:-make}
 export HOST=${HOST:-$(./default-host.sh)}
 export AR=${HOST}-ar
