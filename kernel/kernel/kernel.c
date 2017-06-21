@@ -89,8 +89,8 @@ void	kernel_early(struct mb_partial_info *mbi)
 void	kernel_main(void)
 {
 	terminal_debug("creating task1...");
-	/* load_task((uint32_t*)0x200000, (uint32_t*)&task1, 0x2000); */
-	/* load_task((uint32_t*)0x210000, (uint32_t*)&task2, 0x2000); */
+	//load_task((uint32_t*)0x200000, (uint32_t*)&task1, 0x2000);
+	//load_task((uint32_t*)0x210000, (uint32_t*)&task2, 0x2000);
 	terminal_ok();
 	terminal_debug("allowing interrupts...");
 	sti;
